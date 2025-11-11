@@ -13,27 +13,22 @@ const createSampleUsers = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully');
 
-    // Hash passwords properly
-    const saltRounds = 10;
-    console.log('🔑 Hashing passwords...');
+    // Create sample users with plain passwords
+    // The Admin model beforeCreate hook will hash them automatically
+    console.log('👥 Preparing sample users...');
     
-    const rraPasswordHash = await bcrypt.hash('rra123', saltRounds);
-    const localPasswordHash = await bcrypt.hash('local123', saltRounds);
-    const agentPasswordHash = await bcrypt.hash('agent123', saltRounds);
-
-    // Create sample users with properly hashed passwords
     const sampleUsers = [
       {
         name: 'RRA National Admin',
         email: 'rraadmin@rra.gov.rw',
-        password_hash: rraPasswordHash,
+        password_hash: 'rra123', // Plain password - will be hashed by model hook
         role: 'rra_admin',
         is_active: true
       },
       {
         name: 'Kigali City Admin',
         email: 'localadmin@kigali.gov.rw',
-        password_hash: localPasswordHash,
+        password_hash: 'local123', // Plain password - will be hashed by model hook
         role: 'local_admin',
         district_id: 1,
         is_active: true
@@ -41,7 +36,7 @@ const createSampleUsers = async () => {
       {
         name: 'Nyamirambo Sector Agent',
         email: 'agent@nyamirambo.gov.rw',
-        password_hash: agentPasswordHash,
+        password_hash: 'agent123', // Plain password - will be hashed by model hook
         role: 'agent',
         sector_id: 1,
         is_active: true

@@ -7,10 +7,10 @@ const Admin = require('./Admin');
 const District = require('./District');
 const Sector = require('./Sector');
 
-// Define only basic associations
+// Define all associations
 const defineAssociations = () => {
   try {
-    // Only define essential associations for now
+    // Trader - Transaction associations
     Trader.hasMany(Transaction, { 
       foreignKey: 'trader_id',
       onDelete: 'CASCADE'
@@ -19,7 +19,34 @@ const defineAssociations = () => {
       foreignKey: 'trader_id'
     });
 
-    console.log('✅ Basic associations defined successfully');
+    // District - Trader associations
+    District.hasMany(Trader, { 
+      foreignKey: 'district_id',
+      onDelete: 'SET NULL'
+    });
+    Trader.belongsTo(District, { 
+      foreignKey: 'district_id'
+    });
+
+    // Sector - Trader associations
+    Sector.hasMany(Trader, { 
+      foreignKey: 'sector_id',
+      onDelete: 'SET NULL'
+    });
+    Trader.belongsTo(Sector, { 
+      foreignKey: 'sector_id'
+    });
+
+    // District - Sector associations (if sectors belong to districts)
+    District.hasMany(Sector, { 
+      foreignKey: 'district_id',
+      onDelete: 'CASCADE'
+    });
+    Sector.belongsTo(District, { 
+      foreignKey: 'district_id'
+    });
+
+    console.log('✅ All associations defined successfully');
   } catch (error) {
     console.error('❌ Error defining associations:', error);
   }
@@ -31,7 +58,13 @@ const syncDatabase = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully.');
     
-    // Create tables in correct order (without foreign keys first)
+    // Create tables in correct order (parents first, then children)
+    await District.sync({ force: false });
+    console.log('✅ Districts table synced');
+    
+    await Sector.sync({ force: false });
+    console.log('✅ Sectors table synced');
+    
     await Admin.sync({ force: false });
     console.log('✅ Admins table synced');
     
@@ -41,13 +74,7 @@ const syncDatabase = async () => {
     await Transaction.sync({ force: false });
     console.log('✅ Transactions table synced');
     
-    await District.sync({ force: false });
-    console.log('✅ Districts table synced');
-    
-    await Sector.sync({ force: false });
-    console.log('✅ Sectors table synced');
-    
-    // Now define associations
+    // Now define associations after all tables are created
     defineAssociations();
     
     console.log('✅ Database synced successfully.');
